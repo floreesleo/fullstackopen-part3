@@ -28,6 +28,19 @@ app.get("/", (request, response) => {
   response.send("<h1>Hello Fullstack Open</h1>");
 });
 
+app.get("/info", (request, response) => {
+  const currentDate = new Date();
+
+  response.send(
+    `<div>
+      <p>Phonebook has info for ${persons.length} ${
+      persons.length === 1 ? "person" : "people"
+    }</p>
+    <p>${currentDate}</p>
+    </div>`
+  );
+});
+
 app.get("/api/persons", (request, response) => {
   response.json(persons);
 });

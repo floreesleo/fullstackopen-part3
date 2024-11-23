@@ -45,6 +45,18 @@ app.get("/api/persons", (request, response) => {
   response.json(persons);
 });
 
+app.get("/api/persons/:id", (request, response) => {
+  const id = Number(request.params.id);
+
+  const person = persons.find((n) => n.id === id);
+
+  if (!person) {
+    response.status(404).send("<h1>Person not found</h1>").end();
+  }
+
+  response.json(person);
+});
+
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Express server running: http://localhost:${PORT}`);

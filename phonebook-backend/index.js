@@ -92,6 +92,12 @@ app.post("/api/persons", (request, response) => {
     number: body.number,
   };
 
+  if (persons.some((p) => p.name.toLowerCase() === person.name.toLowerCase())) {
+    return response.status(409).json({
+      error: "name must be unique",
+    });
+  }
+
   persons = persons.concat(person);
   response.json(person);
 });

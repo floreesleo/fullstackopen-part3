@@ -1,6 +1,10 @@
 const express = require("express");
-const app = express();
+const morgan = require("morgan");
 
+const app = express();
+const PORT = 3001;
+
+app.use(morgan("tiny"));
 app.use(express.json());
 
 let persons = [
@@ -102,7 +106,6 @@ app.post("/api/persons", (request, response) => {
   response.json(person);
 });
 
-const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Express server running: http://localhost:${PORT}`);
 });

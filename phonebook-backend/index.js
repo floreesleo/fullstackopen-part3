@@ -1,16 +1,16 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
-morgan.token("data", (req, res) => {
-  return JSON.stringify(req.body);
-});
+// morgan.token("data", (req, res) => {
+//   return JSON.stringify(req.body);
+// });
 
-app.use(
-  morgan(":method :url :status :res[content-length] - :response-time ms :data")
-);
+app.use(cors());
+app.use(morgan("tiny"));
 app.use(express.json());
 
 let persons = [
@@ -71,10 +71,15 @@ app.get("/api/persons/:id", (request, response) => {
 
 app.delete("/api/persons/:id", (request, response) => {
   const id = Number(request.params.id);
-  const newPersons = persons.filter((p) => p.id !== id);
+  const personDelete = persons.find((p) => p.id === id);
 
-  // response.status(204).end();
-  response.json(newPersons).status(204).end();
+  if (!personDelete) {
+    return response.status(404).json({ error: "Person not found" });
+  }
+
+  persons = persons.filter((p) => p.id !== id);
+
+  response.status(200).json(personDelete).end();
 });
 
 const generateId = () => {
@@ -113,5 +118,5 @@ app.post("/api/persons", (request, response) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Express server running: http://localhost:${PORT}`);
+  console.log(`EXPRESS SERVER RUNNING ON PORT: ${PORT}`);
 });

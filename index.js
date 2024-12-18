@@ -2,8 +2,11 @@ const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
 
+require("dotenv").config();
+
+const Person = require("./models/person");
+
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 // morgan.token("data", (req, res) => {
 //   return JSON.stringify(req.body);
@@ -14,28 +17,7 @@ app.use(morgan("tiny"));
 app.use(express.json());
 app.use(express.static("dist"));
 
-let persons = [
-  {
-    id: 1,
-    name: "Arto Hellas",
-    number: "040-123456",
-  },
-  {
-    id: 2,
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
-  },
-  {
-    id: 3,
-    name: "Dan Abramov",
-    number: "12-43-234345",
-  },
-  {
-    id: 4,
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
-  },
-];
+// let persons = [];
 
 app.get("/", (request, response) => {
   response.send("<h1>Hello Fullstack Open</h1>");
@@ -55,19 +37,15 @@ app.get("/info", (request, response) => {
 });
 
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
+  Person.find({})
+    .then((persons) => response.json(persons))
+    .catch((error) => response.status(500).json({ error: error }));
 });
 
 app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-
-  const person = persons.find((n) => n.id === id);
-
-  if (!person) {
-    response.status(404).send("<h1>Person not found</h1>").end();
-  }
-
-  response.json(person);
+  Person.findById(request.params.id)
+    .then((person) => response.json(person))
+    .catch((error) => response.status(404).json({ error: error }));
 });
 
 app.delete("/api/persons/:id", (request, response) => {
@@ -94,30 +72,31 @@ const generateId = () => {
 };
 
 app.post("/api/persons", (request, response) => {
-  const body = request.body;
+  const { name, number } = request.body;
 
-  if (!body.name || !body.number) {
+  if (!name || !number) {
     return response.status(400).json({
       error: "content missing",
     });
   }
 
-  const person = {
-    id: generateId(),
-    name: body.name,
-    number: body.number,
-  };
+  Person.findOne({ name: new RegExp(`^${name}$`, "i") }).then(
+    (existinPerson) => {
+      if (existinPerson) {
+        return response.status(409).json({ error: "name must be unique" });
+      }
 
-  if (persons.some((p) => p.name.toLowerCase() === person.name.toLowerCase())) {
-    return response.status(409).json({
-      error: "name must be unique",
-    });
-  }
+      const newPerson = new Person({ name, number });
 
-  persons = persons.concat(person);
-  response.json(person);
+      return newPerson
+        .save()
+        .then((savedPerson) => response.status(201).json(savedPerson))
+        .catch((error) => response.status(500).json({ error: error }));
+    }
+  );
 });
 
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`EXPRESS SERVER RUNNING ON PORT: ${PORT}`);
 });

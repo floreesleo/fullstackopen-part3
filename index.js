@@ -17,8 +17,6 @@ app.use(morgan("tiny"));
 app.use(express.json());
 app.use(express.static("dist"));
 
-// let persons = [];
-
 app.get("/", (request, response) => {
   response.send("<h1>Hello Fullstack Open</h1>");
 });
@@ -49,16 +47,9 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const personDelete = persons.find((p) => p.id === id);
-
-  if (!personDelete) {
-    return response.status(404).json({ error: "Person not found" });
-  }
-
-  persons = persons.filter((p) => p.id !== id);
-
-  response.status(200).json(personDelete).end();
+  Person.findByIdAndDelete(request.params.id)
+    .then((result) => response.status(204).end())
+    .catch((error) => response.status(404).json({ error: error }));
 });
 
 const generateId = () => {

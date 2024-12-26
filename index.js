@@ -21,17 +21,19 @@ app.get("/", (request, response) => {
   response.send("<h1>Hello Fullstack Open</h1>");
 });
 
-app.get("/info", (request, response) => {
+app.get("/info", (request, response, next) => {
   const currentDate = new Date();
 
-  response.send(
-    `<div>
-      <p>Phonebook has info for ${persons.length} ${
-      persons.length === 1 ? "person" : "people"
-    }</p>
-    <p>${currentDate}</p>
-    </div>`
-  );
+  Person.find({})
+    .then((persons) => {
+      response.send(`<div>
+        <p>Phonebook has info for ${persons.length} ${
+        persons.length === 1 ? "person" : "people"
+      }</p>
+        <p>${currentDate}</p>
+      </div>`);
+    })
+    .catch((error) => next(error));
 });
 
 app.get("/api/persons", (request, response, next) => {

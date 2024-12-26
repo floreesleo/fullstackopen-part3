@@ -34,22 +34,22 @@ app.get("/info", (request, response) => {
   );
 });
 
-app.get("/api/persons", (request, response) => {
+app.get("/api/persons", (request, response, next) => {
   Person.find({})
     .then((persons) => response.json(persons))
-    .catch((error) => response.status(500).json({ error: error }));
+    .catch((error) => next(error));
 });
 
-app.get("/api/persons/:id", (request, response) => {
+app.get("/api/persons/:id", (request, response, next) => {
   Person.findById(request.params.id)
     .then((person) => response.json(person))
-    .catch((error) => response.status(404).json({ error: error }));
+    .catch((error) => next(error));
 });
 
-app.delete("/api/persons/:id", (request, response) => {
+app.delete("/api/persons/:id", (request, response, next) => {
   Person.findByIdAndDelete(request.params.id)
     .then((result) => response.status(204).end())
-    .catch((error) => response.status(404).json({ error: error }));
+    .catch((error) => next(error));
 });
 
 const generateId = () => {
@@ -62,29 +62,30 @@ const generateId = () => {
   return randomId;
 };
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const { name, number } = request.body;
 
-  if (!name || !number) {
-    return response.status(400).json({
-      error: "content missing",
-    });
-  }
+  if (!name) return response.status(400).json({ error: "name is missing" });
+  if (!number) return response.status(400).json({ error: "number is missing" });
 
-  Person.findOne({ name: new RegExp(`^${name}$`, "i") }).then(
-    (existinPerson) => {
-      if (existinPerson) {
-        return response.status(409).json({ error: "name must be unique" });
-      }
+  const newPerson = new Person({ name, number });
 
-      const newPerson = new Person({ name, number });
+  return newPerson
+    .save()
+    .then((savedPerson) => response.status(201).json(savedPerson))
+    .catch((error) => next(error));
+});
 
-      return newPerson
-        .save()
-        .then((savedPerson) => response.status(201).json(savedPerson))
-        .catch((error) => response.status(500).json({ error: error }));
-    }
-  );
+app.put("/api/persons/:id", (request, response, next) => {
+  const { name, number } = request.body;
+
+  const updatedPerson = { name: name, number: number };
+
+  Person.findByIdAndUpdate(request.params.id, updatedPerson, {
+    new: true,
+  })
+    .then((updatedPerson) => response.json(updatedPerson))
+    .catch((error) => next(error));
 });
 
 const errorHandler = (error, request, response, next) => {

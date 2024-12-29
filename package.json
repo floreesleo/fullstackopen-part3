@@ -7,7 +7,7 @@
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build:ui": "rm -rf dist && cd ../fullstackopen-solutions/PART2/phonebook && npm run build && cp -r dist ../../../backend-part3-fullstackopen/dist",
-    "build:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
+    "build:full": "npm run build:ui && git add . && git commit -m '🚀 uibuild' && git push"
   },
   "author": "floreesleo",
   "license": "ISC",
